@@ -11,6 +11,94 @@ Age Classification on the given Dataset
 
 ---
 
+## Phase 1
+
+### Overview
+
+Binary age classification (Young = 0, Old = 1) using a **ResNet-18** trained from scratch on 18,332 face images.
+
+### Setup
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Place the dataset
+#    Download dataset.zip from Google Drive, unzip it so the layout is:
+#    dataset/
+#      train/
+#        0/   (9,166 Young images)
+#        1/   (9,166 Old images)
+#      valid/  (134 images, flat)
+#      valid_labels.csv
+```
+
+### How to Run
+
+```bash
+# Quick sanity check (2 epochs, small batch — verifies pipeline end-to-end)
+python train.py --mode quick
+
+# Full training run (30 epochs by default)
+python train.py --mode full
+
+# Final submission run (trains on train + valid combined)
+python train.py --mode final
+
+# Override hyper-parameters as needed
+python train.py --mode full --epochs 50 --lr 5e-4 --batch_size 32
+```
+
+### Expected Outputs
+
+All artefacts are saved to **`results/phase1/`**:
+
+| File | Description |
+|------|-------------|
+| `saved_model.pth` | Full model checkpoint (`torch.save(model, ...)`) |
+| `best_model.pth` | Best validation checkpoint (only in `full` mode) |
+| `metrics.csv` | Per-epoch loss, train acc, val acc, LR |
+| `loss_curve.png` | Training loss plot |
+| `accuracy_curve.png` | Train / validation accuracy plot |
+| `config.json` | Run configuration for reproducibility |
+
+### Verify Submission Format
+
+```bash
+python evaluate_submission_student.py \
+    --model_path results/phase1/saved_model.pth \
+    --model_file model_class.py \
+    --data_dir dataset
+```
+
+### Submission Deliverables
+
+Rename for submission:
+- `model_class.py` → `roll_no.py`
+- `results/phase1/saved_model.pth` → `roll_no.pth`
+- One-page PDF report → `roll_no.pdf`
+
+### Run Tests
+
+```bash
+python -m pytest tests/test_phase1.py -v
+```
+
+### Reproducibility
+
+- Fixed random seed (`SEED = 42`) for Python, NumPy, and PyTorch
+- `torch.backends.cudnn.deterministic = True`
+- All hyper-parameters logged to `results/phase1/config.json`
+
+### Assumptions & Notes
+
+1. **Dataset not included in repo** — download `dataset.zip` from Google Drive and extract to `dataset/`.
+2. The assignment says "You may modify anything except the optimizer" — we use **AdamW** as provided in the starter notebook.
+3. For the **final submission**, set `--mode final` to retrain on train + valid combined, as instructed.
+4. The model is saved with `torch.save(model, path)` (full model, not `state_dict`) for compatibility with `evaluate_submission_student.py`.
+
+---
+
 ## 1. Overview
 
 In this assignment, you will build an image classifier that predicts the **age** (young vs. old) of a person from a face photograph. You are given a training set of 18,332 face images from the given dataset, split evenly between two classes.

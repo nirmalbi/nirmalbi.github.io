@@ -137,7 +137,7 @@ def evaluate(model, loader, device):
     correct, total = 0, 0
     for images, labels in loader:
         images = images.to(device)
-        labels = torch.tensor(labels, dtype=torch.long).to(device)
+        labels = labels.long().to(device)
         outputs = model(images)
         correct += (outputs.argmax(1) == labels).sum().item()
         total += images.size(0)
@@ -284,7 +284,7 @@ def train(args):
 
         for images, labels in train_loader:
             images = images.to(device)
-            labels = torch.tensor(labels, dtype=torch.long).to(device)
+            labels = labels.long().to(device)
 
             optimizer.zero_grad()
             outputs = model(images)
